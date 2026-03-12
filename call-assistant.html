@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0a0f">
+<title>WebsiteON — Call Assistant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   TOKENS
+═══════════════════════════════════════════ */
+:root {
+  --bg:        #0a0a0f;
+  --surface:   #13131a;
+  --surface2:  #1c1c28;
+  --border:    #2a2a3d;
+  --accent:    #6c63ff;
+  --accent2:   #ff6584;
+  --green:     #22c55e;
+  --red:       #ef4444;
+  --yellow:    #f59e0b;
+  --blue:      #3b82f6;
+  --text:      #e8e8f0;
+  --muted:     #6060a0;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ═══════════════════════════════════════════
+   BASE
+═══════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Sora', sans-serif;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ═══════════════════════════════════════════
+   TOP BAR
+═══════════════════════════════════════════ */
+.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+.logo {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.progress-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.progress-bar {
+  flex: 1;
+  height: 5px;
+  background: var(--surface2);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+.progress-label {
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.export-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: 'Sora', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  -webkit-appearance: none;
+}
+.export-btn:hover, .export-btn:active { border-color: var(--accent); color: var(--accent); }
+
+/* ═══════════════════════════════════════════
+   MAIN
+═══════════════════════════════════════════ */
+.main {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 14px 14px calc(14px + var(--safe-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ═══════════════════════════════════════════
+   FIRM CARD
+═══════════════════════════════════════════ */
+.firm-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  position: relative;
+  overflow: hidden;
+}
+.firm-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+}
+.firm-badge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.firm-index {
+  font-size: 10px;
+  font-family: 'DM Mono', monospace;
+  color: var(--muted);
+}
+.firm-type-tag {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+  background: var(--accent)15;
+  border: 1px solid var(--accent)30;
+  padding: 2px 8px;
+  border-radius: 99px;
+}
+.firm-name {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-bottom: 12px;
+}
+.firm-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 14px;
+}
+.tag {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 12px;
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  text-decoration: none;
+  transition: all 0.15s;
+  -webkit-appearance: none;
+}
+.tag.rating  { color: var(--yellow); border-color: #f59e0b25; background: #f59e0b08; }
+.tag.phone   { color: var(--green);  border-color: #22c55e25; background: #22c55e08; cursor: pointer; }
+.tag.website { color: var(--blue);   border-color: #3b82f625; background: #3b82f608; cursor: pointer; }
+.tag.maps    { color: #e8e8f0;       border-color: #ffffff15; background: #ffffff05; cursor: pointer; }
+.tag.phone:active, .tag.website:active, .tag.maps:active { opacity: 0.7; }
+
+/* ═══════════════════════════════════════════
+   OBSERVATII
+═══════════════════════════════════════════ */
+.obs-box {
+  background: var(--surface2);
+  border: 1px solid var(--accent)25;
+  border-left: 3px solid var(--accent);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+.obs-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.obs-text {
+  font-size: 14px;
+  line-height: 1.7;
+  color: #cccce0;
+  white-space: pre-line;
+}
+
+/* ═══════════════════════════════════════════
+   SCRIPT
+═══════════════════════════════════════════ */
+.script-container {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.script-header {
+  padding: 12px 16px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.script-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.scroll-hint {
+  font-size: 10px;
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+/* Script is NOT height-limited on mobile — full scroll of page is better UX */
+.script-body {
+  padding: 16px;
+}
+
+.section { margin-bottom: 20px; }
+.section:last-child { margin-bottom: 0; }
+
+.section-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.script-line {
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.script-line strong { color: #fff; font-weight: 600; }
+
+.highlight-box {
+  background: linear-gradient(90deg, var(--accent)12, transparent);
+  border-left: 3px solid var(--accent);
+  padding: 10px 14px;
+  border-radius: 0 10px 10px 0;
+  margin-bottom: 10px;
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--text);
+}
+.highlight-box strong { color: #fff; }
+
+.reviews-pill {
+  display: inline-block;
+  background: var(--yellow)20;
+  border: 1px solid var(--yellow)40;
+  color: var(--yellow);
+  font-weight: 700;
+  padding: 1px 8px;
+  border-radius: 99px;
+  font-size: 14px;
+}
+
+.list-item {
+  font-size: 14px;
+  line-height: 1.7;
+  color: #cccce0;
+  padding-left: 18px;
+  position: relative;
+  margin-bottom: 5px;
+}
+.list-item::before {
+  content: '→';
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.obs-in-script {
+  margin: 10px 0 14px;
+}
+.obs-in-script-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent2);
+  margin-bottom: 6px;
+}
+
+/* Prices */
+.prices-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 10px 0;
+}
+.price-box {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+}
+.price-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+.price-val { font-size: 16px; font-weight: 700; color: #fff; font-family: 'DM Mono', monospace; }
+
+/* Modificari */
+.modif-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 8px 0;
+}
+.modif-box {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px;
+  text-align: center;
+}
+.modif-label { font-size: 10px; color: var(--muted); margin-bottom: 4px; }
+.modif-val { font-size: 14px; font-weight: 700; color: #fff; font-family: 'DM Mono', monospace; }
+.modif-sub { font-size: 9px; color: var(--muted); margin-top: 2px; }
+
+/* Objections */
+.objection {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+}
+.objection-q {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent2);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.objection-a {
+  font-size: 14px;
+  line-height: 1.7;
+  color: #cccce0;
+}
+
+/* ═══════════════════════════════════════════
+   STATUS + NOTES
+═══════════════════════════════════════════ */
+.status-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+}
+.section-header-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+.status-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+  margin-bottom: 12px;
+}
+.status-btn {
+  padding: 14px 8px;
+  border-radius: 12px;
+  border: 2px solid var(--border);
+  font-family: 'Sora', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: var(--surface2);
+  color: var(--muted);
+  -webkit-appearance: none;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  min-height: 52px; /* touch target */
+}
+.status-btn:active { transform: scale(0.96); }
+.s-interesat.active    { background: #22c55e12; border-color: var(--green);  color: var(--green); }
+.s-nu-raspuns.active   { background: #f59e0b12; border-color: var(--yellow); color: var(--yellow); }
+.s-nu-interesat.active { background: #ef444412; border-color: var(--red);    color: var(--red); }
+.s-resunat.active      { background: #3b82f612; border-color: var(--blue);   color: var(--blue); }
+
+.notes-area {
+  width: 100%;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  color: var(--text);
+  font-family: 'Sora', sans-serif;
+  font-size: 14px;
+  resize: none;
+  min-height: 68px;
+  outline: none;
+  transition: border-color 0.2s;
+  -webkit-appearance: none;
+}
+.notes-area:focus { border-color: var(--accent); }
+.notes-area::placeholder { color: var(--muted); }
+
+/* ═══════════════════════════════════════════
+   NAV
+═══════════════════════════════════════════ */
+.nav-section {
+  display: flex;
+  gap: 10px;
+  padding-bottom: var(--safe-bottom);
+}
+.nav-btn {
+  flex: 1;
+  padding: 16px;
+  border-radius: 14px;
+  border: none;
+  font-family: 'Sora', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 56px;
+  touch-action: manipulation;
+  -webkit-appearance: none;
+  user-select: none;
+}
+.nav-btn:active { transform: scale(0.97); }
+.nav-prev {
+  background: var(--surface2);
+  color: var(--muted);
+  border: 1.5px solid var(--border);
+  max-width: 120px;
+}
+.nav-prev:hover { color: var(--text); }
+.nav-next {
+  background: linear-gradient(135deg, var(--accent) 0%, #9c8cff 100%);
+  color: #fff;
+  box-shadow: 0 4px 20px var(--accent)40;
+}
+.nav-next:hover { box-shadow: 0 6px 28px var(--accent)55; }
+.nav-next:active { box-shadow: 0 2px 12px var(--accent)30; }
+
+/* ═══════════════════════════════════════════
+   DONE SCREEN
+═══════════════════════════════════════════ */
+.done-screen {
+  display: none;
+  text-align: center;
+  padding: 60px 20px;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  min-height: 80dvh;
+  justify-content: center;
+}
+.done-screen.show { display: flex; }
+.done-emoji { font-size: 60px; }
+.done-title { font-size: 24px; font-weight: 700; }
+.done-sub { font-size: 14px; color: var(--muted); line-height: 1.6; max-width: 280px; }
+.done-stats {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 6px 0;
+}
+.stat-chip {
+  padding: 8px 14px;
+  border-radius: 99px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1.5px solid;
+}
+.done-export-btn {
+  background: linear-gradient(135deg, var(--accent), #9c8cff);
+  color: #fff;
+  border: none;
+  padding: 16px 32px;
+  border-radius: 14px;
+  font-family: 'Sora', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 8px;
+  box-shadow: 0 4px 20px var(--accent)40;
+  -webkit-appearance: none;
+  min-height: 56px;
+}
+.done-back-btn {
+  background: var(--surface2);
+  color: var(--muted);
+  border: 1.5px solid var(--border);
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-family: 'Sora', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-appearance: none;
+}
+
+/* ═══════════════════════════════════════════
+   MOBILE OVERRIDES
+═══════════════════════════════════════════ */
+@media (max-width: 420px) {
+  .firm-name { font-size: 18px; }
+  .script-line, .highlight-box { font-size: 14px; }
+  .objection-a { font-size: 13px; }
+  .list-item { font-size: 13px; }
+  .prices-grid { grid-template-columns: 1fr 1fr; }
+  .modif-grid { grid-template-columns: repeat(3, 1fr); }
+  .nav-prev { max-width: 100px; font-size: 13px; }
+  .status-btn { font-size: 12px; padding: 12px 6px; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="logo">WebsiteON</div>
+  <div class="progress-wrap">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="progress-label" id="progressLabel">1 / 52</div>
+  </div>
+  <button class="export-btn" onclick="exportCSV()">⬇ CSV</button>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main" id="mainContent">
+
+  <!-- 1. FIRM CARD -->
+  <div class="firm-card">
+    <div class="firm-badge">
+      <div class="firm-index" id="firmIndex">Firmă #1</div>
+      <div class="firm-type-tag" id="firmType"></div>
+    </div>
+    <div class="firm-name" id="firmName"></div>
+    <div class="firm-meta" id="firmMeta"></div>
+    <div class="obs-box">
+      <div class="obs-label">👁 Observații website</div>
+      <div class="obs-text" id="firmObs"></div>
+    </div>
+  </div>
+
+  <!-- 2. SCRIPT -->
+  <div class="script-container">
+    <div class="script-header">
+      <div class="script-title">📞 Script apel</div>
+      <div class="scroll-hint">↕ derulează</div>
+    </div>
+    <div class="script-body" id="scriptContent"></div>
+  </div>
+
+  <!-- 3. STATUS + NOTES -->
+  <div class="status-section">
+    <div class="section-header-label">Rezultat apel</div>
+    <div class="status-grid">
+      <button class="status-btn s-interesat"    onclick="setStatus('interesat')"    id="btn-interesat">✅ Interesat</button>
+      <button class="status-btn s-nu-raspuns"   onclick="setStatus('nu-raspuns')"   id="btn-nu-raspuns">📵 Nu a răspuns</button>
+      <button class="status-btn s-nu-interesat" onclick="setStatus('nu-interesat')" id="btn-nu-interesat">❌ Nu e interesat</button>
+      <button class="status-btn s-resunat"      onclick="setStatus('resunat')"      id="btn-resunat">🔄 Resunat mai târziu</button>
+    </div>
+    <textarea class="notes-area" id="notesArea" placeholder="Notițe rapide (număr WA, email, feedback)…" rows="3" oninput="saveNote()"></textarea>
+  </div>
+
+  <!-- 4. NAV -->
+  <div class="nav-section">
+    <button class="nav-btn nav-prev" onclick="navigate(-1)" id="prevBtn">← Înapoi</button>
+    <button class="nav-btn nav-next" onclick="navigate(1)"  id="nextBtn">Următor →</button>
+  </div>
+
+</div>
+
+<!-- DONE SCREEN -->
+<div class="done-screen" id="doneScreen">
+  <div class="done-emoji">🎉</div>
+  <div class="done-title">Lista finalizată!</div>
+  <div class="done-stats" id="doneStats"></div>
+  <div class="done-sub">Descarcă CSV-ul pentru a vedea toate rezultatele organizat.</div>
+  <button class="done-export-btn" onclick="exportCSV()">⬇ Descarcă CSV rezultate</button>
+  <button class="done-back-btn" onclick="goBack()">← Înapoi la lista</button>
+</div>
+
+<script>
+/* ─────────────────────────────────────────
+   DATA
+───────────────────────────────────────── */
+const FIRMS = [{"name": "MasinaPotrivita", "phone": "+40730676040", "rating": 4.8, "reviews": 646, "address": "Bulevardul Unirii 70", "website": "http://www.masinapotrivita.com/", "mapsUrl": "https://www.google.com/maps/place/MasinaPotrivita/data=!4m7!3m6!1s0x40b1ff200b622963:0x76ab6ba3c960000b!8m2!3d44.4253113!4d26.1236319!16s%2Fg%2F11g6nzw_ww!19sChIJYyliCyD_sUARCwBgyaNrq3Y?authuser=0&hl=en&rclk=1", "obs": "– site-ul pare vechi și greu de parcurs\n– informațiile importante nu sunt evidențiate clar\n– nu există un mod simplu și rapid de contact sau programare", "type": "Evaluator"}, {"name": "Mobile Expert GSM", "phone": "+40770773132", "rating": 4.7, "reviews": 231, "address": "Strada Apusului 44", "website": "http://www.servicegsmbucuresti.ro/", "mapsUrl": "https://www.google.com/maps/place/Mobile+Expert+GSM/data=!4m7!3m6!1s0x40b201b98b371b71:0x888d6e8fb3f6bc7f!8m2!3d44.434517!4d26.0158073!16s%2Fg%2F1w96f7kh!19sChIJcRs3i7kBskARf7z2s49ujYg?authuser=0&hl=en&rclk=1", "obs": "– pagina este foarte lungă și greu de parcurs, clientul se pierde rapid în informații\n– serviciile sunt prezentate într-un mod dezordonat și nu există o structură clară\n– nu există un buton vizibil și simplu prin care clientul să ia rapid legătura", "type": "Furnizor de servicii telecomunicații"}, {"name": "Expertdentist", "phone": "+40744549003", "rating": 4.9, "reviews": 191, "address": "Str. Drumul Timonierului, nr.11-13, bl. 109, sc.3, ap. 97 parter, Sector 6", "website": "http://www.expertdentist.ro/", "mapsUrl": "https://www.google.com/maps/place/Expertdentist/data=!4m7!3m6!1s0x40b201b3fed92a57:0x5fd6825e39f7688d!8m2!3d44.4321011!4d26.0290399!16s%2Fg%2F11c6w006vv!19sChIJVyrZ_rMBskARjWj3OV6C1l8?authuser=0&hl=en&rclk=1", "obs": "-designul pare învechit și nu transmite standardele moderne ale unei clinici\n– informațiile importante (programare, servicii principale) nu sunt evidențiate clar\n– site-ul nu ghidează pacientul spre o programare rapidă", "type": "Dentist"}, {"name": "Automobile Expert SRL - Închirieri auto București - Rent a car Bucuresti - Masini de inchiriat ieftine sector 6 Bucuresti", "phone": "+40754422599", "rating": 4.9, "reviews": 176, "address": "B-dul Iuliu Maniu 7, Cladirea administrativa Apaca, etaj 1, Biroul 5", "website": "https://www.expert-inchirieriauto.ro/preturi/", "mapsUrl": "https://www.google.com/maps/place/Automobile+Expert+SRL+-+%C3%8Enchirieri+auto+Bucure%C8%99ti+-+Rent+a+car+Bucuresti+-+Masini+de+inchiriat+ieftine+sector+6+Bucuresti/data=!4m7!3m6!1s0x40b201c51c7fa139:0x344a77088e4a1885!8m2!3d44.4338597!4d26.0520271!16s%2Fg%2F11cl_hl75h!19sChIJOaF_HMUBskARhRhKjgh3SjQ?authuser=0&hl=en&rclk=1", "obs": "– pagina este extrem de aglomerată și greu de parcurs vizual\n\n– structura seamănă mai mult cu un tabel tehnic decât cu o prezentare comercială\n\n– nu există un traseu clar spre rezervare sau contact rapid", "type": "Agenție de închirieri auto"}, {"name": "EXPERT TOPO PAI LLC", "phone": "+40729013589", "rating": 5.0, "reviews": 118, "address": "Aleea Romancierilor 2", "website": "http://www.expertpai.ro/", "mapsUrl": "https://www.google.com/maps/place/EXPERT+TOPO+PAI+LLC/data=!4m7!3m6!1s0x40b2004bc75b401b:0xd0ad65937e76f953!8m2!3d44.4257039!4d26.0259954!16s%2Fg%2F1hc6x_rql!19sChIJG0Bbx0sAskARU_l2fpNlrdA?authuser=0&hl=en&rclk=1", "obs": "– pagina arată foarte veche și structurată mai mult ca un document informativ decât ca un site comercial\n\n– serviciile sunt listate lung, fără evidențiere clară a beneficiilor sau a unui mesaj principal\n\n– nu există un buton vizibil de contact sau cerere ofertă care să ghideze utilizatorul spre acțiune", "type": "Firmă de topografie"}, {"name": "Detectivul Auto", "phone": "+40750475999", "rating": 4.9, "reviews": 112, "address": "", "website": "http://detectivulauto.ro/", "mapsUrl": "https://www.google.com/maps/place/Detectivul+Auto/data=!4m7!3m6!1s0x40b1ffa98f4af8e5:0xd355888b2b8817e4!8m2!3d44.3813218!4d26.1100797!16s%2Fg%2F11k0t9j313!19sChIJ5fhKj6n_sUAR5BeIK4uIVdM?authuser=0&hl=en&rclk=1", "obs": "– structura paginii este lungă și obositoare, utilizatorul trebuie să deruleze mult până ajunge la informațiile esențiale\n\n– mesajul principal și avantajele serviciului nu sunt comunicate clar în prima zonă vizibilă\n\n– elementele de conversie (contact / cerere ofertă) nu sunt suficient de evidențiate pentru a ghida rapid clientul spre acțiune", "type": "Evaluator"}, {"name": "Alpinism Utilitar Bucuresti - Expert Alpin Solutions S.R.L.", "phone": "+40761880368", "rating": 4.9, "reviews": 79, "address": "Murgoci Gheorghe Munteanu 11", "website": "https://alpinism-utilitar.ro/", "mapsUrl": "https://www.google.com/maps/place/Alpinism+Utilitar+Bucuresti+-+Expert+Alpin+Solutions+S.R.L./data=!4m7!3m6!1s0x40b1ffe4ce6b3813:0xf1873f67a9e83dcf!8m2!3d44.419092!4d26.0894782!16s%2Fg%2F11hdj3yz7s!19sChIJEzhrzuT_sUARzz3oqWc_h_E?authuser=0&hl=en&rclk=1", "obs": "– prima zonă a site-ului arată bine vizual, dar nu explică rapid și clar ce servicii oferă firma și cui se adresează\n\n– există foarte multe blocuri și informații pe pagină, ceea ce face navigarea mai greoaie și diluează mesajul principal\n\n– elementele de contact și cerere ofertă nu sunt suficient de evidente pentru a conduce utilizatorul rapid spre acțiune", "type": "Alpinism utilitar"}, {"name": "Neomed Expert Center", "phone": "+40314011573", "rating": 5.0, "reviews": 28, "address": "Bloc 803, Drumul Taberei Parter, 803, Sc.2, Ap.46", "website": "http://www.neomedcenter.ro/", "mapsUrl": "https://www.google.com/maps/place/Neomed+Expert+Center/data=!4m7!3m6!1s0x40b20032f96f14b3:0x69b1701ad1937a1e!8m2!3d44.422646!4d26.040302!16s%2Fg%2F11b8_llsmb!19sChIJsxRv-TIAskARHnqT0RpwsWk?authuser=0&hl=en&rclk=1", "obs": "– design-ul pare învechit și foarte încărcat vizual, ceea ce poate reduce încrederea pacienților noi\n\n– informațiile esențiale despre servicii, avantaje și diferențiatori nu sunt structurate clar pentru o citire rapidă\n\n– traseul de programare nu este suficient de evident și nu ghidează utilizatorul direct spre acțiune", "type": "Clinică medicală"}, {"name": "Certificate Energetice Bucuresti RoDanExpert", "phone": "+40727886484", "rating": 5.0, "reviews": 21, "address": "Strada Orșova 12", "website": "https://rodanexpert.ro/", "mapsUrl": "https://www.google.com/maps/place/Certificate+Energetice+Bucuresti+RoDanExpert/data=!4m7!3m6!1s0x40b201bb876c0b85:0x8c2b84745b4bac7a!8m2!3d44.4419875!4d26.0323322!16s%2Fg%2F11f7km9nbx!19sChIJhQtsh7sBskAReqxLW3SEK4w?authuser=0&hl=en&rclk=1", "obs": "– design-ul este decent, dar pare generic și nu transmite suficientă diferențiere față de concurență\n\n– mesajele de vânzare și beneficiile principale nu sunt evidențiate suficient de clar în prima zonă vizibilă\n\n– traseul de conversie (cerere ofertă / contact rapid) putea fi mult mai agresiv și repetat pentru a crește lead-urile", "type": "Evaluator imobiliar"}, {"name": "Stan Sorin-Antonio - Expert Evaluator Autorizat ANEVAR", "phone": "+40729151623", "rating": 4.8, "reviews": 20, "address": "Strada Vlăhița 1", "website": "https://www.evaluator-anevar.com/", "mapsUrl": "https://www.google.com/maps/place/Stan+Sorin-Antonio+-+Expert+Evaluator+Autorizat+ANEVAR/data=!4m7!3m6!1s0x40b1ffc2d05adf7d:0x7b60ce5c66d11582!8m2!3d44.4106801!4d26.1684978!16s%2Fg%2F11jmccpl0w!19sChIJfd9a0ML_sUARghXRZlzOYHs?authuser=0&hl=en&rclk=1", "obs": "– design-ul este învechit și nu inspiră suficientă încredere pentru un serviciu profesional\n\n– informațiile despre servicii, proces și beneficii sunt greu de parcurs și slab structurate\n\n– lipsesc elemente clare de conversie (formular rapid, CTA vizibil, motive convingătoare de alegere)", "type": "Evaluator imobiliar"}, {"name": "Protectia Muncii Bucuresti - Expert Safety SSM", "phone": "+40765669376", "rating": 4.8, "reviews": 19, "address": "Bulevardul Constructorilor", "website": "https://expertsafety.ro/", "mapsUrl": "https://www.google.com/maps/place/Protectia+Muncii+Bucuresti+-+Expert+Safety+SSM/data=!4m7!3m6!1s0x40b203144521bbd1:0x7737d9cd453cff2c!8m2!3d44.4564008!4d26.0423902!16s%2Fg%2F11h3g425dn!19sChIJ0bshRRQDskARLP88Rc3ZN3c?authuser=0&hl=en&rclk=1", "obs": "– prima secțiune nu comunică rapid și clar valoarea serviciilor și cui se adresează\n\n– design-ul pare generic și nu transmite suficientă diferențiere sau încredere profesională\n\n– traseul către contact / cerere ofertă nu este suficient de vizibil și direct pentru conversie", "type": "Securitate și sănătate în muncă"}, {"name": "NANSTALSI EXPERT SRL", "phone": "+40732769725", "rating": 4.8, "reviews": 18, "address": "Strada Azurului 3", "website": "https://taplink.cc/nanstalsi", "mapsUrl": "https://www.google.com/maps/place/NANSTALSI+EXPERT+SRL/data=!4m7!3m6!1s0x40b2019f2f2b492f:0x51031ab53bb56807!8m2!3d44.4317721!4d26.0264454!16s%2Fg%2F11vrdzsn25!19sChIJL0krL58BskARB2i1O7UaA1E?authuser=0&hl=en&rclk=1", "obs": "– site-ul arată ca o pagină simplă tip link-hub și nu ca un website profesional de prezentare\n\n– informațiile sunt puse într-un mod foarte lung și greu de scanat rapid de către un client\n\n– nu există structură clară de servicii, beneficii și apel puternic la acțiune pentru conversie", "type": "Firmă de contabilitate"}, {"name": "Team Risk - Evaluator Risc Securitate", "phone": "+40733183881", "rating": 4.6, "reviews": 11, "address": "Bulevardul 1 Decembrie 1918 nr.4", "website": "http://teamrisk.ro/", "mapsUrl": "https://www.google.com/maps/place/Team+Risk+-+Evaluator+Risc+Securitate/data=!4m7!3m6!1s0x40b1f94bf25af129:0xab94394f96629b8e!8m2!3d44.4357516!4d26.1725554!16s%2Fg%2F11g9qctl9x!19sChIJKfFa8kv5sUARjptilk85lKs?authuser=0&hl=en&rclk=1", "obs": "– design-ul este învechit și nu transmite imaginea unei firme moderne și profesioniste\n\n– mesajele importante despre servicii și beneficii nu sunt evidențiate clar pentru utilizator\n\n– nu există un apel puternic și vizibil către contact sau cerere de ofertă care să genereze conversii", "type": "Servicii B2B"}, {"name": "Evaluatori ANEVAR", "phone": "+40745250570", "rating": 4.5, "reviews": 11, "address": "Bloc 4, Sc. C, Et. 4, Ap. 76, Bulevardul Gheorghe Șincai 2", "website": "http://www.imobiliarevaluator.ro/", "mapsUrl": "https://www.google.com/maps/place/Evaluatori+ANEVAR/data=!4m7!3m6!1s0x40b1ff0407724301:0x229a8855b273777f!8m2!3d44.4142589!4d26.1057044!16s%2Fg%2F11cm9ck0vb!19sChIJAUNyBwT_sUARf3dzslWImiI?authuser=0&hl=en&rclk=1", "obs": "– design-ul este foarte simplu și pare incomplet, ceea ce poate transmite lipsă de profesionalism\n\n– nu există elemente vizuale sau secțiuni de încredere (recenzii, portofoliu, beneficii clare) care să convingă rapid vizitatorul\n\n– traseul către contact sau cerere de ofertă nu este suficient de vizibil și nu încurajează acțiunea imediată", "type": "Evaluator imobiliar"}, {"name": "Certificat Energetic", "phone": "+40723592862", "rating": 5.0, "reviews": 10, "address": "Strada Pașcani Nr.6", "website": "https://www.certificate-energetice-bucuresti.ro/", "mapsUrl": "https://www.google.com/maps/place/Certificat+Energetic/data=!4m7!3m6!1s0x40b200483d5bffff:0x4a67458fa6bf62f2!8m2!3d44.4201292!4d26.0244395!16s%2Fg%2F11hyt11zrz!19sChIJ__9bPUgAskAR8mK_po9FZ0o?authuser=0&hl=en&rclk=1", "obs": "– design-ul pare învechit și neuniform, cu culori și stiluri care nu creează o imagine profesională clară\n\n– structura informației este confuză și vizitatorul nu înțelege rapid pașii sau beneficiile serviciului\n\n– formularul și elementele de contact nu sunt evidențiate suficient pentru a genera acțiune rapidă", "type": "Evaluator imobiliar"}, {"name": "Exact Value Project - evaluare & consultanta", "phone": "+40722580014", "rating": 5.0, "reviews": 4, "address": "Bloc C1, Prelungirea Ghencea, H, scara 1, Ap. 17", "website": "http://www.exactvalue.ro/", "mapsUrl": "https://www.google.com/maps/place/Exact+Value+Project+-+evaluare+%26+consultanta/data=!4m7!3m6!1s0x40b2003fc9164cf3:0x2a359e2a9de9fb9c!8m2!3d44.4115019!4d26.0204355!16s%2Fg%2F11fy4t_215!19sChIJ80wWyT8AskARnPvpnSqeNSo?authuser=0&hl=en&rclk=1", "obs": "– site-ul este foarte încărcat cu text lung și greu de parcurs, ceea ce scade interesul vizitatorului\n\n– design-ul este depășit vizual și nu transmite o imagine modernă sau premium\n\n– lipsesc elemente clare de acțiune (buton vizibil de contact / ofertă) care să ghideze utilizatorul spre conversie", "type": "Evaluator imobiliar"}, {"name": "Total Expert Administrare", "phone": "+40729284128", "rating": 5.0, "reviews": 4, "address": "nr., Strada Valea Argeșului 5", "website": "http://expertadministrare.ro/", "mapsUrl": "https://www.google.com/maps/place/Total+Expert+Administrare/data=!4m7!3m6!1s0x40b200472b7a00bb:0x4006a821dad3493e!8m2!3d44.4157162!4d26.01777!16s%2Fg%2F11gbv7vc_x!19sChIJuwB6K0cAskARPknT2iGoBkA?authuser=0&hl=en&rclk=1", "obs": "– design-ul este foarte simplu și pare neactualizat, ceea ce poate afecta încrederea\n\n– structura informației este slab organizată și nu evidențiază clar beneficiile serviciilor\n\n– nu există elemente vizuale sau butoane puternice care să încurajeze contactul rapid", "type": "Firmă de contabilitate"}, {"name": "Expert Bone & Menaj", "phone": "+40726890498", "rating": 5.0, "reviews": 4, "address": "Bloc F, Drumul Taberei", "website": "http://bonesimenaj.ro/", "mapsUrl": "https://www.google.com/maps/place/Expert+Bone+%26+Menaj/data=!4m7!3m6!1s0x40b201d6939aaaab:0x22003a95bb31b167!8m2!3d44.426547!4d26.0576287!16s%2Fg%2F11fqpt9rkj!19sChIJq6qak9YBskARZ7Exu5U6ACI?authuser=0&hl=en&rclk=1", "obs": "– design-ul pare vechi și neuniform, cu multe culori și stiluri diferite care creează confuzie\n\n– textul este foarte lung și greu de parcurs, fără evidențiere clară a serviciilor principale\n\n– nu există un call-to-action vizibil și simplu pentru solicitare rapidă sau contact imediat", "type": "Agenție de recrutare"}, {"name": "Societate Profesională Notarială Visoiu & Raducanu", "phone": "+40725251028", "rating": 5.0, "reviews": 44, "address": "Șoseaua Mihai Bravu 140", "website": "http://notariatmihaibravu.ro/", "mapsUrl": "https://www.google.com/maps/place/Societate+Profesional%C4%83+Notarial%C4%83+Visoiu+%26+Raducanu/data=!4m7!3m6!1s0x40b1ffabfc90f493:0x898110a03d715a4d!8m2!3d44.437912!4d26.135659!16s%2Fg%2F11xf7q_px8!19sChIJk_SQ_Kv_sUARTVpxPaAQgYk?authuser=0&hl=en&rclk=1", "obs": "design-ul pare realizat mai demult și nu transmite suficient profesionalism pentru servicii notariale\n\n– informațiile despre servicii sunt foarte limitate și greu de parcurs rapid de către client\n\n– lipsesc elemente clare de acțiune (programare / solicitare ofertă), ceea ce poate reduce contactările", "type": "Notar"}, {"name": "Aequitas Cotroceni Societate Notariala", "phone": "+40751298800", "rating": 5.0, "reviews": 576, "address": "Bulevardul Eroii Sanitari 1-3", "website": "http://www.aequitas-cotroceni.ro/", "mapsUrl": "https://www.google.com/maps/place/Aequitas+Cotroceni+Societate+Notariala/data=!4m7!3m6!1s0x40b1ff59ee6f5553:0x73d022f64c5276c!8m2!3d44.4341236!4d26.0768353!16s%2Fg%2F11rrvr3_zp!19sChIJU1Vv7ln_sUARbCfFZC8CPQc?authuser=0&hl=en&rclk=1", "obs": "design-ul este aglomerat și neuniform, ceea ce afectează claritatea și percepția de profesionalism\n\n– contrastul textelor și lizibilitatea sunt slabe în anumite zone, informațiile devin greu de parcurs\n\n– structura vizuală și elementele grafice par învechite și nealiniate cu standardele actuale din domeniu", "type": "Notar"}, {"name": "Birou Notarial Nica Oana Raluca & Asociatii", "phone": "+40723616928", "rating": 5.0, "reviews": 16, "address": "Str. Jean Louis Calderon 52", "website": "http://www.notarnica.ro/", "mapsUrl": "https://www.google.com/maps/place/Birou+Notarial+Nica+Oana+Raluca+%26+Asociatii/data=!4m7!3m6!1s0x40b1ff09f84b9aa9:0x4ec323682025c5fc!8m2!3d44.4406906!4d26.1047345!16s%2Fg%2F11vds9z292!19sChIJqZpL-An_sUAR_MUlIGgjw04?authuser=0&hl=en&rclk=1", "obs": "– homepage-ul pare construit ca o simplă pagină de contact, fără prezentare clară a serviciilor\n\n– design-ul este foarte basic și transmite un nivel redus de profesionalism pentru domeniul notarial\n\n– lipsesc elemente de structură și conținut care să ghideze clientul spre o decizie sau programare", "type": "Notar"}, {"name": "BIROU INDIVIDUAL NOTARIAL \"CÂNIPĂ CRISTINA-ELENA\"", "phone": "+40727374375", "rating": 5.0, "reviews": 225, "address": "Bulevardul Aviatorilor 23, Etaj 1, ap. 2", "website": "https://notariate.ro/notari/societate-profesionala-notariala-daniel-gutnic-cristina-canipa/", "mapsUrl": "https://www.google.com/maps/place/BIROU+INDIVIDUAL+NOTARIAL+%22C%C3%82NIP%C4%82+CRISTINA-ELENA%22/data=!4m7!3m6!1s0x40b20390725a8ceb:0x7f1a35549ee7eec7!8m2!3d44.4616812!4d26.0855467!16s%2Fg%2F11sy9_sc95!19sChIJ64xacpADskARx-7nnlQ1Gn8?authuser=0&hl=en&rclk=1", "obs": "pagina nu este un website propriu, ci un profil într-un portal general, ceea ce limitează controlul asupra imaginii și prezentării\n\n– design-ul este foarte aglomerat și greu de parcurs, informațiile importante se pierd rapid\n\n– lipsesc elemente clare de branding și diferențiere, ceea ce poate reduce încrederea și memorabilitatea pentru client", "type": "Notar"}, {"name": "Societate Profesională Notarială Ianuș și Asociații", "phone": "+40731219435", "rating": 5.0, "reviews": 68, "address": "35 Strada Frumoasă", "website": "https://www.google.com/aclk?sa=L&ai=DChsSEwiV79yag5mTAxVdg4MHHdt9LR0YACICCAEQARoCZWY&co=1&ase=2&gclid=CjwKCAjwpcTNBhA5EiwAdO1S9nofN1_CzKpQXO3XvvM2ayuJiUN3lg-12k-SOOEFYQwFRQebL9jgMxoCGK4QAvD_BwE&cce=2&category=acrcp_v1_32&sig=AOD64_1PTme9Q4l5tm9o-sUt4cRm5r0a7w&adurl&q&ctype=99&nis=6", "mapsUrl": "https://www.google.com/maps/place/Societate+Profesional%C4%83+Notarial%C4%83+Ianu%C8%99+%C8%99i+Asocia%C8%9Bii/data=!4m7!3m6!1s0x40b2039e856f2f8f:0x416498b83e1ce1e!8m2!3d44.44865!4d26.086442!16s%2Fg%2F11m718ttzc!19sChIJjy9vhZ4DskARHs7hg4tJFgQ?authuser=0&hl=en&rclk=1", "obs": "– design-ul este destul de generic și nu diferențiază suficient biroul notarial față de alte site-uri similare\n\n– structura conținutului este limitată, serviciile sunt prezentate superficial și nu ajută clientul să înțeleagă clar oferta\n\n– elementele vizuale și layout-ul par ușor învechite față de standardele actuale din zona serviciilor juridice", "type": "Notar"}, {"name": "Birou Notarial \"SIGN IN\"", "phone": "+40733538139", "rating": 5.0, "reviews": 383, "address": "42 Șoseaua Pipera", "website": "https://www.google.com/aclk?sa=L&ai=DChsSEwjn2tWYg5mTAxW_r4MHHfPSJ7UYACICCAEQBRoCZWY&co=1&ase=2&gclid=CjwKCAjwpcTNBhA5EiwAdO1S9pURscZio1qMCVGXllJST2-GdW2YI8j5jSmcUZ9h8CftIZiMA4A1DxoCWd4QAvD_BwE&cce=2&category=acrcp_v1_32&sig=AOD64_1SweRDn2M1R93Q5CSiQZf5oNEVRg&adurl&q&ctype=99&nis=6", "mapsUrl": "https://www.google.com/maps/place/Birou+Notarial+%22SIGN+IN%22/data=!4m7!3m6!1s0x40b203a34861cc73:0x18808c5e67ab75e4!8m2!3d44.480202!4d26.103906!16s%2Fg%2F11gr7yq9sv!19sChIJc8xhSKMDskAR5HWrZ16MgBg?authuser=0&hl=en&rclk=1", "obs": "– nu există un website propriu, prezentarea este limitată la profilul Google\n\n– informațiile despre servicii și diferențiere sunt foarte reduse pentru a convinge clientul\n\n– lipsesc elemente de branding și structură profesională care să transmită încredere și autoritate", "type": "Notar"}, {"name": "NOTARIAL OFFICE DRAGOMIR | BUNEA", "phone": "+40213672068", "rating": 4.9, "reviews": 249, "address": "bloc Malaxa, Bulevardul Nicolae Bălcescu 35A, et. 1, ap. 2", "website": "http://dragomirbunea.ro/", "mapsUrl": "https://www.google.com/maps/place/NOTARIAL+OFFICE+DRAGOMIR+%7C+BUNEA/data=!4m7!3m6!1s0x40b1ff4f53ca52d3:0xef6fa511a20e30be!8m2!3d44.4404922!4d26.0993924!16s%2Fg%2F11bzymz4sk!19sChIJ01LKU0__sUARvjAOohGlb-8?authuser=0&hl=en&rclk=1", "obs": "– homepage-ul este extrem de simplu și nu prezintă clar serviciile sau avantajele biroului\n\n– design-ul este minimalist spre gol, ceea ce poate transmite lipsă de profesionalism și încredere\n\n– lipsesc elemente de structură și ghidare care să ajute clientul să înțeleagă ce are de făcut mai departe", "type": "Notar"}, {"name": "Notar Public Dobrotă Vitzman Norin Dan", "phone": "+40213109570", "rating": 4.9, "reviews": 65, "address": "Strada Costache Negri 4, et. 1, ap. 3", "website": "http://www.notariasociati.ro/", "mapsUrl": "https://www.google.com/maps/place/Notar+Public+Dobrot%C4%83+Vitzman+Norin+Dan/data=!4m7!3m6!1s0x40b1ff673142c159:0xb50aab5310c32a77!8m2!3d44.4337037!4d26.0782169!16s%2Fg%2F11g9qhy4tk!19sChIJWcFCMWf_sUARdyrDEFOrCrU?authuser=0&hl=en&rclk=1", "obs": "– pagina este foarte încărcată cu text juridic greu de parcurs pentru un client obișnuit\n\n– structura vizuală este rigidă și neprietenoasă, informațiile importante nu ies în evidență\n\n– design-ul pare învechit și nu transmite suficientă claritate sau orientare spre programare / contact", "type": "Notar"}, {"name": "Individual Notary Office Mariana Cîrstocea", "phone": "+40774646195", "rating": 4.9, "reviews": 97, "address": "Bulevardul Ion Mihalache 106", "website": "http://www.notariationmihalache.ro/", "mapsUrl": "https://www.google.com/maps/place/Individual+Notary+Office+Mariana+C%C3%AErstocea/data=!4m7!3m6!1s0x40b2021943e67d9b:0xa3be3c49dd72888b!8m2!3d44.4621721!4d26.0730025!16s%2Fg%2F11c2khslmx!19sChIJm33mQxkCskARi4hy3Uk8vqM?authuser=0&hl=en&rclk=1", "obs": "– design-ul pare realizat mai demult și nu este aliniat cu standardele actuale din zona serviciilor profesionale\n\n– structura paginii este destul de rigidă și nu evidențiază clar pașii pentru programare sau contact\n\n– prezentarea serviciilor este fragmentată și nu ajută clientul să înțeleagă rapid oferta completă", "type": "Notar"}, {"name": "BIN Jura", "phone": "+40745344330", "rating": 4.9, "reviews": 54, "address": "Bulevardul Ferdinand I 18", "website": "https://bnpjura.ro/contact", "mapsUrl": "https://www.google.com/maps/place/BIN+Jura/data=!4m7!3m6!1s0x40b1ff318efa0c33:0x5bfa0e493cda3b2a!8m2!3d44.4394501!4d26.1197337!16s%2Fg%2F11flzgqvtc!19sChIJMwz6jjH_sUARKjvaPEkO-ls?authuser=0&hl=en&rclk=1", "obs": "– design-ul și elementele grafice par învechite și nealiniate cu standardele actuale\n\n– structura paginii este fragmentată și greu de parcurs rapid pentru un client\n\n– lipsesc elemente clare de conversie care să ghideze vizitatorul spre programare sau contact", "type": "Notar"}, {"name": "LUNGU - Notarial Individual Office", "phone": "+40213352134", "rating": 4.9, "reviews": 409, "address": "Bloc C, Piața Națiunile Unite 3-5, Scara 3, Ap.54", "website": "https://sorinlungu.ro/", "mapsUrl": "https://www.google.com/maps/place/LUNGU+-+Notarial+Individual+Office/data=!4m7!3m6!1s0x40b1ff152bb0726d:0x7c4908b9426b4c19!8m2!3d44.4285687!4d26.0960923!16s%2Fg%2F1tdgysxv!19sChIJbXKwKxX_sUARGUxrQrkISXw?authuser=0&hl=en&rclk=1", "obs": "– design-ul este destul de generic și nu creează o diferențiere clară față de alte birouri notariale\n\n– structura conținutului este lungă și greu de parcurs rapid pentru un client care caută informații concrete\n\n– elementele de conversie sunt slab evidențiate, programarea sau contactul nu ies suficient în prim-plan", "type": "Notar"}, {"name": "SEMPER - Notary Public", "phone": "+40213133421", "rating": 4.8, "reviews": 18, "address": "Șoseaua Mihai Bravu 181", "website": "http://notariatsemper.ro/", "mapsUrl": "https://www.google.com/maps/place/SEMPER+-+Notary+Public/data=!4m7!3m6!1s0x40b1ff31eba22ba9:0xd1a54f84681ac023!8m2!3d44.4351108!4d26.1378122!16s%2Fg%2F11c1tmmsys!19sChIJqSui6zH_sUARI8AaaIRPpdE?authuser=0&hl=en&rclk=1", "obs": "– structura paginii este foarte simplă și oferă puține informații clare despre servicii\n\n– design-ul pare destul de generic și nu diferențiază biroul notarial\n\n– lipsesc elemente care să ghideze clar clientul spre programare sau solicitarea unui serviciu", "type": "Notar"}, {"name": "Societate Profesională Notarială COSMA DĂESCU", "phone": "+40770824970", "rating": 4.8, "reviews": 70, "address": "Bulevardul Corneliu Coposu 3, bl. 101, sc.2, et.1, ap.19", "website": "http://www.notarulpublic.ro/", "mapsUrl": "https://www.google.com/maps/place/Societate+Profesional%C4%83+Notarial%C4%83+COSMA+D%C4%82ESCU/data=!4m7!3m6!1s0x40b1ff3da46126f9:0xbcaee7a54a90f012!8m2!3d44.4299629!4d26.1060468!16s%2Fg%2F11j2p63v0j!19sChIJ-SZhpD3_sUAREvCQSqXnrrw?authuser=0&hl=en&rclk=1", "obs": "– homepage-ul este foarte gol și nu prezintă deloc serviciile notariale oferite\n\n– design-ul este extrem de simplu și nu transmite suficient profesionalism sau încredere\n\n– lipsesc elemente de structură și navigare care să ajute clientul să găsească rapid informațiile importante", "type": "Notar"}, {"name": "Birou Notarial DITU RODICA", "phone": "+40310050501", "rating": 4.8, "reviews": 151, "address": "Bulevardul Dimitrie Cantemir nr. 13, bl. 11 sc 1", "website": "https://notariate.ro/notari/bucuresti/birou-individual-notarial-ditu-rodica/", "mapsUrl": "https://www.google.com/maps/place/Birou+Notarial+DITU+RODICA/data=!4m7!3m6!1s0x40b1ff5f47effc7f:0xd85f31ce36307390!8m2!3d44.420615!4d26.1043612!16s%2Fg%2F11fjmgjkfl!19sChIJf_zvR1__sUARkHMwNs4xX9g?authuser=0&hl=en&rclk=1", "obs": "– nu este un website propriu, ci o pagină într-un portal general, ceea ce limitează controlul asupra imaginii\n\n– pagina este foarte aglomerată și greu de parcurs rapid pentru un client\n\n– lipsesc elemente clare de branding și prezentare profesională a serviciilor", "type": "Notar"}, {"name": "Maria Cazan, Notar Public Obor", "phone": "+40724906556", "rating": 4.8, "reviews": 174, "address": "bl 32, Șoseaua Ștefan cel Mare 39, sc C, ap 78", "website": "https://notarultau.ro/", "mapsUrl": "https://www.google.com/maps/place/Maria+Cazan", "obs": "– design-ul pare realizat mai demult și nu este aliniat cu standardele actuale\n\n– structura paginii este destul de rigidă și informațiile sunt greu de parcurs rapid\n\n– elementele de programare sau contact nu sunt suficient evidențiate pentru client", "type": "Notar"}, {"name": "DURNESCU şi ASOCIAŢII Societate Profesională Notarială", "phone": "+40213312071", "rating": 4.7, "reviews": 28, "address": "Piața Sfântul Ștefan 13B", "website": "https://dixid.cards/spndurnescu-hmye", "mapsUrl": "https://www.google.com/maps/place/DURNESCU+%C5%9Fi+ASOCIA%C5%A2II+Societate+Profesional%C4%83+Notarial%C4%83/data=!4m7!3m6!1s0x40b1ff4903e79b17:0x36c1bd48f12769c5!8m2!3d44.434415!4d26.1161047!16s%2Fg%2F11cm0krdyf!19sChIJF5vnA0n_sUARxWkn8Ui9wTY?authuser=0&hl=en&rclk=1", "obs": "– nu există un website de prezentare propriu, este doar o pagină tip carte de vizită\n\n– lipsesc complet informațiile despre servicii, experiență și diferențiere\n\n– nu există structură de conținut care să ajute clientul să înțeleagă oferta sau să ia o decizie", "type": "Notar"}, {"name": "Societate Profesionala Notariala \"VIRTUS\"", "phone": "+40773872679", "rating": 4.7, "reviews": 53, "address": "Șos. Pantelimon 287, Bl.10, Parter", "website": "https://www.notariatpantelimon.ro/", "mapsUrl": "https://www.google.com/maps/place/Societate+Profesionala+Notariala+%E2%80%9CVIRTUS%E2%80%9D/data=!4m7!3m6!1s0x40b1f9f0eda26ae3:0x72a3afb220d65dfa!8m2!3d44.4425939!4d26.1684804!16s%2Fg%2F11vr0t70vr!19sChIJ42qi7fD5sUAR-l3WILKvo3I?authuser=0&hl=en&rclk=1", "obs": "– homepage-ul este foarte simplu și nu prezintă clar serviciile sau avantajele biroului\n\n– design-ul pare realizat mai demult și nu transmite suficient profesionalism\n\n– lipsesc elemente de structură și ghidare care să ajute clientul să ia o decizie sau să programeze un serviciu", "type": "Notar"}, {"name": "Notar public Diaconescu Adina și Notar Public Diaconescu Remus-Ștefan", "phone": "+40314248098", "rating": 4.6, "reviews": 111, "address": "Bulevardul Pache Protopopescu 31", "website": "http://www.bnpadiaconescu.ro/", "mapsUrl": "https://www.google.com/maps/place/Notar+public+Diaconescu+Adina+%C8%99i+Notar+Public+Diaconescu+Remus-%C8%98tefan/data=!4m7!3m6!1s0x40b1ff31ff06e5a1:0x11802e39e3cdb682!8m2!3d44.4392874!4d26.1219102!16s%2Fg%2F11cfdh2w8!19sChIJoeUG_zH_sUARgrbN4zkugBE?authuser=0&hl=en&rclk=1", "obs": "– homepage-ul este foarte simplu și nu prezintă clar serviciile sau avantajele biroului\n\n– design-ul pare realizat mai demult și nu transmite suficient profesionalism\n\n– lipsesc elemente de structură și ghidare care să ajute clientul să ia o decizie sau să programeze un serviciu", "type": "Notar"}, {"name": "Marincaş Eugen", "phone": "+40213238406", "rating": 4.6, "reviews": 48, "address": "Strada Ion Voinescu 19", "website": "http://www.notariatmarincas.ro/", "mapsUrl": "https://www.google.com/maps/place/Marinca%C5%9F+Eugen/data=!4m7!3m6!1s0x40b1fedfcb47cff5:0x114c23b080d440ea!8m2!3d44.4246638!4d26.1271543!16s%2Fg%2F1hc3y0ghf!19sChIJ9c9Hy9_-sUAR6kDUgLAjTBE?authuser=0&hl=en&rclk=1", "obs": "– homepage-ul afișează doar logo-ul și nu oferă informații despre servicii sau activitate\n\n– lipsesc complet structura, navigarea și conținutul utile pentru client\n\n– site-ul transmite o imagine incompletă și poate reduce încrederea în profesionalism", "type": "Notar"}, {"name": "Individual office Notary Felix-Cristian Radu", "phone": "+40311017765", "rating": 4.6, "reviews": 96, "address": "Piața Romană 9", "website": "https://www.notar-radufelix.ro/", "mapsUrl": "https://www.google.com/maps/place/Individual+office+Notary+Felix-Cristian+Radu/data=!4m7!3m6!1s0x40b1ff5272cb3fab:0xe66307366ab1107f!8m2!3d44.4467361!4d26.0974277!16s%2Fg%2F1ttq0m58!19sChIJqz_LclL_sUARfxCxajYHY-Y?authuser=0&hl=en&rclk=1", "obs": "– design-ul și elementele grafice par învechite și nealiniate cu standardele actuale\n\n– structura paginii este neclară și informațiile importante nu sunt evidențiate suficient\n\n– navigarea și pașii pentru programare sau contact nu sunt foarte intuitivi pentru client", "type": "Notar"}, {"name": "Notar, Societatea Profesională Notarială NOTARIUM", "phone": "+40774409609", "rating": 4.5, "reviews": 163, "address": "Str. Ramnicu Valcea.8 bl. DAY Residence, et.1, ap. 107-110", "website": "http://notarium.ro/", "mapsUrl": "https://www.google.com/maps/place/Notar", "obs": "– website-ul nu funcționează și afișează eroare 404, clientul nu poate accesa informațiile\n\n– lipsesc complet prezentarea serviciilor și datele utile pentru contact\n\n– situația poate afecta serios încrederea și imaginea profesională online", "type": "Notar"}, {"name": "Societatea Profesională Notarială Pușoiu Iuliana și Miclescu Bogdan Constantin", "phone": "+40731467071", "rating": 4.5, "reviews": 126, "address": "Apartament 37, Calea Călărașilor 311", "website": "http://www.notariat-public-bucuresti.ro/", "mapsUrl": "https://www.google.com/maps/place/Societatea+Profesional%C4%83+Notarial%C4%83+Pu%C8%99oiu+Iuliana+%C8%99i+Miclescu+Bogdan+Constantin/data=!4m7!3m6!1s0x40b1fed76e4d75c1:0x196dcd3e0254fd3b!8m2!3d44.4318608!4d26.1355653!16s%2Fg%2F11cllmms38!19sChIJwXVNbtf-sUARO_1UAj7NbRk?authuser=0&hl=en&rclk=1", "obs": "– pagina este foarte încărcată cu text lung și greu de parcurs pentru un client\n\n– design-ul și elementele grafice par învechite și nealiniate cu standardele actuale\n\n– informațiile importante și pașii de contact nu sunt evidențiate clar", "type": "Notar"}, {"name": "BNP Suprema-Lex", "phone": "+40212105807", "rating": 4.5, "reviews": 24, "address": "Bloc 39A, Strada Ardeleni 1", "website": "http://www.suprema-lex.ro/", "mapsUrl": "https://www.google.com/maps/place/BNP+Suprema-Lex/data=!4m7!3m6!1s0x40b1f8cb5ee6ab6d:0x978b8b658e6d6f07!8m2!3d44.4456786!4d26.1203874!16s%2Fg%2F11cnb6bgyf!19sChIJbavmXsv4sUARB29tjmWLi5c?authuser=0&hl=en&rclk=1", "obs": "– design-ul pare realizat mai demult și nu este aliniat cu standardele actuale\n\n– structura conținutului este destul de simplă și nu prezintă clar toate serviciile\n\n– elementele de programare sau contact nu sunt suficient evidențiate pentru client", "type": "Notar"}, {"name": "Societatea Profesionala Notariala BIRSAN & DOLOIU si Asociatii", "phone": "+40314380113", "rating": 4.5, "reviews": 17, "address": "Bulevardul Unirii Nr. 31, Bloc A1, Parter", "website": "https://www.birsan-doloiu.ro/", "mapsUrl": "https://www.google.com/maps/place/Societatea+Profesionala+Notariala+BIRSAN+%26+DOLOIU+si+Asociatii/data=!4m7!3m6!1s0x40b1ff3cb7b0090d:0x5bd197e15f529083!8m2!3d44.4271117!4d26.1062196!16s%2Fg%2F11ny2lyqct!19sChIJDQmwtzz_sUARg5BSX-GX0Vs?authuser=0&hl=en&rclk=1", "obs": "– design-ul pare realizat mai demult și nu este aliniat cu standardele actuale\n\n– structura paginii este destul de încărcată și informațiile importante nu sunt evidențiate clar\n\n– pașii pentru programare sau contact nu sunt foarte vizibili pentru client", "type": "Notar"}, {"name": "Birou Individual Notarial Chirita Florin-Corneliu", "phone": "+40213480242", "rating": 4.4, "reviews": 223, "address": "Bulevardul Camil Ressu 39", "website": "http://www.notarchirita.ro/", "mapsUrl": "https://www.google.com/maps/place/Birou+Individual+Notarial+Chirita+Florin-Corneliu/data=!4m7!3m6!1s0x40b1fe95dee79743:0xfc49c1028b638075!8m2!3d44.4154555!4d26.1531077!16s%2Fg%2F11x9cl5bx!19sChIJQ5fn3pX-sUARdYBjiwLBSfw?authuser=0&hl=en&rclk=1", "obs": "design-ul și stilul vizual sunt învechite și nu transmit o imagine modernă\n\n– structura paginii este simplă și nu evidențiază clar serviciile sau beneficiile\n\n– elementele de contact și programare nu sunt suficient de vizibile pentru client", "type": "Notar"}, {"name": "Rodica Coliban Şi Bianca Hărangus, B.N.P.", "phone": "+40213273025", "rating": 4.4, "reviews": 107, "address": "Bulevardul Mircea Vodă 35", "website": "https://www.notarsector3.ro/", "mapsUrl": "https://www.google.com/maps/place/Rodica+Coliban+%C5%9Ei+Bianca+H%C4%83rangus", "obs": "– design-ul general este învechit și încărcat vizual, nu transmite o imagine profesională modernă\n\n– informațiile sunt prezentate în blocuri mari de text și nu sunt ușor de parcurs rapid\n\n– zona de contact și programare nu este suficient evidențiată pentru a ghida clientul spre acțiune", "type": "Notar"}, {"name": "Biroul Notarului Public Corșate Adina Georgiana", "phone": "+40213205046", "rating": 4.3, "reviews": 26, "address": "Calea Călărașilor 323", "website": "http://notarcorsate.ro/", "mapsUrl": "https://www.google.com/maps/place/Biroul+Notarului+Public+Cor%C8%99ate+Adina+Georgiana/data=!4m7!3m6!1s0x40b1ffb79cb6bb53:0x993561098efcd54f!8m2!3d44.4320635!4d26.1374687!16s%2Fg%2F11fkv_6hkk!19sChIJU7u2nLf_sUART9X8jglhNZk?authuser=0&hl=en&rclk=1", "obs": "– pagina este foarte lungă și încărcată cu mult text, ceea ce face dificilă parcurgerea rapidă\n\n– structura vizuală este monotonă și nu evidențiază clar serviciile principale\n\n– elementele importante de conversie sunt dispersate și nu ghidează clar clientul spre programare", "type": "Notar"}, {"name": "Confides, Birou Notarial", "phone": "+40752405307", "rating": 4.3, "reviews": 19, "address": "Str. Franceza, 2-4, Bucuresti-Sector 3, Bucuresti, 030104, Str. Franceză 2", "website": "http://www.confides.ro/", "mapsUrl": "https://www.google.com/maps/place/Confides", "obs": "– design-ul este generic și pare bazat pe un template vechi, fără identitate vizuală clară\n\n– conținutul este foarte limitat și nu explică suficient serviciile sau avantajele biroului\n\n– structura paginii este simplă și nu ghidează utilizatorul spre o acțiune clară (programare / contact)", "type": "Notar"}, {"name": "Optima Lex", "phone": "+40314192662", "rating": 4.3, "reviews": 100, "address": "B-dul Unirii nr. 45, bl. E3, tronson IV, parter", "website": "http://www.optimalex.ro/", "mapsUrl": "https://www.google.com/maps/place/Optima+Lex/data=!4m7!3m6!1s0x40b1ff227e400001:0x5047a07d76971990!8m2!3d44.4268146!4d26.1142116!16s%2Fg%2F11g03j7_jc!19sChIJAQBAfiL_sUARkBmXdn2gR1A?authuser=0&hl=en&rclk=1", "obs": "– site-ul este incomplet („pagina în construcție”), ceea ce afectează încrederea clientului\n\n– conținutul este extrem de limitat și nu prezintă serviciile sau informațiile esențiale\n\n– structura paginii nu oferă o experiență clară sau un parcurs logic pentru utilizator", "type": "Notar"}, {"name": "NOTARY LIDIA PITREL", "phone": "+40213262631", "rating": 4.2, "reviews": 58, "address": "Piața Alba Iulia Nr 6, Bl I.5, Sc 1, Et 4, Ap 12, Piața Alba Iulia 6, Bl I5, Sc. 1, Et. 4, Ap. 12", "website": "http://www.notari-asociati.ro/", "mapsUrl": "https://www.google.com/maps/place/NOTARY+LIDIA+PITREL/data=!4m7!3m6!1s0x40b1fede5f0beda5:0x5fac1608004805a4!8m2!3d44.424992!4d26.1301124!16s%2Fg%2F11dx8qd00l!19sChIJpe0LX97-sUARpAVIAAgWrF8?authuser=0&hl=en&rclk=1", "obs": "site-ul este neactualizat și apare în renovare de mult timp, ceea ce reduce credibilitatea\n\n– conținutul este aproape inexistent și nu oferă informații despre servicii sau contact clar\n\n– lipsa securizării (fără SSL) poate afecta încrederea și siguranța utilizatorilor", "type": "Notar"}, {"name": "Apostol Nicoleta, Birou Notarial", "phone": "+40723699787", "rating": 4.2, "reviews": 97, "address": "Sos. Mihai Bravu, 110, Bucuresti-Sector 2, Bucuresti, 021332", "website": "https://notariatpublic.com/notar-sector-2-bucuresti/apostol-nicoleta", "mapsUrl": "https://www.google.com/maps/place/Apostol+Nicoleta", "obs": "– design-ul este foarte învechit și seamănă mai mult cu un portal informativ decât cu un site de prezentare\n\n– structura este aglomerată cu linkuri și informații secundare care distrag de la serviciile principale\n\n– nu există o prezentare clară a biroului sau un call-to-action vizibil pentru contact / programare", "type": "Notar"}, {"name": "SPN Radu Mirela-Silvia and Asociates (Stefanescu Elena și Apostolescu Irina)", "phone": "+40213212403", "rating": 4.2, "reviews": 51, "address": "Bloc F4C, Strada Foișorului 5", "website": "https://www.paginiaurii.ro/companii/Sector+3", "mapsUrl": "https://www.google.com/maps/place/SPN+Radu+Mirela-Silvia+and+Asociates+%28Stefanescu+Elena+%C8%99i+Apostolescu+Irina%29/data=!4m7!3m6!1s0x40b1fee1b79a8c61:0xa52befa68ca678e8!8m2!3d44.4212534!4d26.1223589!16s%2Fg%2F1hc15lx_7!19sChIJYYyat-H-sUAR6HimjKbvK6U?authuser=0&hl=en&rclk=1", "obs": "– pagina nu este un site propriu, ci o listare într-un director extern\n\n– apare eroare / conținut lipsă, ceea ce afectează serios încrederea\n\n– nu există control asupra design-ului, conținutului sau conversiei clienților", "type": "Notar"}, {"name": "Birou notarial", "phone": "+40212550588", "rating": 4.1, "reviews": 22, "address": "Strada Vasile Lascăr 187", "website": "https://notariate.ro/notari/bucuresti/societate-profesionala-notariala-ad-litteram/", "mapsUrl": "https://www.google.com/maps/place/Birou+notarial/data=!4m7!3m6!1s0x40b1f8b414234471:0xaa675857ce154453!8m2!3d44.4507662!4d26.1116501!16s%2Fg%2F11gfxjbsq7!19sChIJcUQjFLT4sUARU0QVzldYZ6o?authuser=0&hl=en&rclk=1", "obs": "– design-ul este foarte aglomerat și seamănă mai mult cu un portal informativ decât cu un site de prezentare\n\n– informațiile importante despre birou și servicii nu sunt evidențiate clar\n\n– nu există un traseu simplu de conversie pentru programare sau contact", "type": "Notar"}, {"name": "Notar Vasilescu Bogdan", "phone": "+40731352336", "rating": 4.0, "reviews": 77, "address": "Strada Lizeanu 1-3", "website": "https://www.notarvasilescu.ro/", "mapsUrl": "https://www.google.com/maps/place/Notar+Vasilescu+Bogdan/data=!4m7!3m6!1s0x40b1f97a25b50113:0xd5d8d9c2f2cf3368!8m2!3d44.4525709!4d26.119671!16s%2Fg%2F11f15cjwrf!19sChIJEwG1JXr5sUARaDPP8sLZ2NU?authuser=0&hl=en&rclk=1", "obs": "– site-ul nu poate fi accesat deloc, ceea ce duce la pierderea totală a potențialilor clienți\n\n– lipsa unei prezențe online funcționale afectează credibilitatea biroului\n\n– utilizatorul nu poate găsi informații sau date de contact în mod direct", "type": "Notar"}];
+
+/* ─────────────────────────────────────────
+   STATE
+───────────────────────────────────────── */
+let current = 0;
+let results = FIRMS.map(() => ({ status: '', notes: '' }));
+
+// Restore from sessionStorage
+try {
+  const sr = sessionStorage.getItem('wson_r');
+  const si = sessionStorage.getItem('wson_i');
+  if (sr) results = JSON.parse(sr);
+  if (si) current = Math.min(parseInt(si), FIRMS.length - 1);
+} catch(e) {}
+
+/* ─────────────────────────────────────────
+   SAVE
+───────────────────────────────────────── */
+function save() {
+  try {
+    sessionStorage.setItem('wson_r', JSON.stringify(results));
+    sessionStorage.setItem('wson_i', current);
+  } catch(e) {}
+}
+
+/* ─────────────────────────────────────────
+   STATUS
+───────────────────────────────────────── */
+function setStatus(s) {
+  // Toggle off if same
+  results[current].status = results[current].status === s ? '' : s;
+  save();
+  renderStatusBtns();
+}
+
+function saveNote() {
+  results[current].notes = document.getElementById('notesArea').value;
+  save();
+}
+
+/* ─────────────────────────────────────────
+   NAVIGATE
+───────────────────────────────────────── */
+function navigate(dir) {
+  if (dir > 0 && current === FIRMS.length - 1) {
+    showDone();
+    return;
+  }
+  current = Math.max(0, Math.min(FIRMS.length - 1, current + dir));
+  save();
+  render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function goBack() {
+  document.getElementById('doneScreen').classList.remove('show');
+  document.getElementById('mainContent').style.display = '';
+  render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showDone() {
+  document.getElementById('mainContent').style.display = 'none';
+  const ds = document.getElementById('doneScreen');
+  ds.classList.add('show');
+
+  const counts = {
+    interesat: results.filter(r => r.status === 'interesat').length,
+    'nu-raspuns': results.filter(r => r.status === 'nu-raspuns').length,
+    'nu-interesat': results.filter(r => r.status === 'nu-interesat').length,
+    resunat: results.filter(r => r.status === 'resunat').length,
+    nesunat: results.filter(r => !r.status).length,
+  };
+
+  document.getElementById('doneStats').innerHTML = `
+    <div class="stat-chip" style="color:var(--green);border-color:var(--green)30;background:var(--green)10">✅ ${counts.interesat} interesați</div>
+    <div class="stat-chip" style="color:var(--yellow);border-color:var(--yellow)30;background:var(--yellow)10">📵 ${counts['nu-raspuns']} nu au răspuns</div>
+    <div class="stat-chip" style="color:var(--red);border-color:var(--red)30;background:var(--red)10">❌ ${counts['nu-interesat']} nu sunt interesați</div>
+    <div class="stat-chip" style="color:var(--blue);border-color:var(--blue)30;background:var(--blue)10">🔄 ${counts.resunat} de resunat</div>
+    ${counts.nesunat > 0 ? `<div class="stat-chip" style="color:var(--muted);border-color:var(--border)">⏳ ${counts.nesunat} nesunate</div>` : ''}
+  `;
+}
+
+/* ─────────────────────────────────────────
+   RENDER STATUS BUTTONS
+───────────────────────────────────────── */
+function renderStatusBtns() {
+  const s = results[current].status;
+  ['interesat','nu-raspuns','nu-interesat','resunat'].forEach(id => {
+    const el = document.getElementById('btn-' + id);
+    if (s === id) el.classList.add('active');
+    else el.classList.remove('active');
+  });
+}
+
+/* ─────────────────────────────────────────
+   BUILD SCRIPT HTML
+───────────────────────────────────────── */
+function esc(str) {
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function buildScript(firm) {
+  const obsLines = firm.obs.split('\n').filter(l => l.trim());
+  const obsHtml = obsLines.map(l =>
+    `<div class="list-item">${esc(l.replace(/^[\s–\-]+/, ''))}</div>`
+  ).join('');
+
+  return `
+<div class="section">
+  <div class="section-label">🔹 Deschidere</div>
+  <div class="highlight-box">Bună ziua.<br>Sun la compania <strong>${esc(firm.name)}</strong>?</div>
+  <div class="script-line">
+    Perfect.<br>
+    V-am găsit pe Google Maps, am observat că aveți recenzii bune — <span class="reviews-pill">${firm.reviews} recenzii</span> — însă când am intrat pe website-ul dumneavoastră am observat că:
+  </div>
+  <div class="obs-in-script">
+    <div class="obs-in-script-label">observații website:</div>
+    ${obsHtml}
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-label">🔹 Propunere</div>
+  <div class="script-line">Noi lucrăm la un proiect prin care ajutăm business-uri locale să aibă website-uri moderne, rapide și gândite pentru a aduce mai mulți clienți.</div>
+  <div class="script-line">Totodată, putem să vă arătăm gratuit, fără nicio obligație, <strong>cum ar arăta în viziunea noastră un website care să reprezinte mai bine brandul dumneavoastră și review-urile bune pe care le aveți deja.</strong></div>
+  <div class="highlight-box">Dacă aveți 30 de secunde, vă explic despre ce este vorba.</div>
+</div>
+
+<div class="section">
+  <div class="section-label">🔹 Explicația</div>
+  <div class="script-line">Realizăm website-uri cu <strong>design premium</strong>, construite logic, de la primul lucru pe care îl vede clientul când intră pe site până în zona de contact și acțiune.</div>
+  <div class="script-line">În această perioadă punem accent pe portofoliu.</div>
+  <div class="prices-grid">
+    <div class="price-box"><div class="price-label">One-pager complet</div><div class="price-val">350 € + TVA</div></div>
+    <div class="price-box"><div class="price-label">Mai multe pagini</div><div class="price-val">400–500 €</div></div>
+  </div>
+  <div class="script-line">Nu există mentenanță lunară. Hosting oferit ca bonus. Toate conturile tehnice vă aparțin dumneavoastră. Nu există costuri recurente.</div>
+</div>
+
+<div class="section">
+  <div class="section-label">🔹 Scopul real</div>
+  <div class="script-line">În acest moment nu încercăm să vă vindem nimic.</div>
+  <div class="script-line">Colegii noștri vă pot realiza <strong>gratuit o primă variantă de design pentru homepage</strong>, folosind informațiile existente pe site-ul actual.</div>
+  <div style="margin:8px 0 10px">
+    <div class="list-item">varianta nouă de design</div>
+    <div class="list-item">raport de analiză al site-ului actual</div>
+    <div class="list-item">comparație cu varianta propusă</div>
+    <div class="list-item">prezentarea completă a ofertei</div>
+  </div>
+  <div class="script-line">Dacă considerați că vă reprezintă mai bine decât site-ul actual, putem discuta mai departe. Dacă nu, nu există nicio obligație.</div>
+  <div class="highlight-box">👉 Pe ce WhatsApp sau email vă putem trimite?</div>
+</div>
+
+<div class="section">
+  <div class="section-label">🔹 Dacă întreabă despre modificări</div>
+  <div class="script-line" style="font-size:14px;color:#aaaacc">Am eliminat panoul clasic de administrare → site stabil, securizat, hosting ca bonus. Modificările sunt opționale și contra cost:</div>
+  <div class="modif-grid">
+    <div class="modif-box"><div class="modif-label">Mici</div><div class="modif-val">~20€</div></div>
+    <div class="modif-box"><div class="modif-label">Medii</div><div class="modif-val">~30€</div></div>
+    <div class="modif-box"><div class="modif-label">Mai multe</div><div class="modif-val">~40€</div><div class="modif-sub">în funcție de volum</div></div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-label">🔹 Obiecții</div>
+  <div class="objection">
+    <div class="objection-q">Avem deja site</div>
+    <div class="objection-a">Știu, tocmai de aceea v-am contactat. Am observat că site-ul dumneavoastră poate fi dus la următorul nivel.</div>
+  </div>
+  <div class="objection">
+    <div class="objection-q">Nu avem timp</div>
+    <div class="objection-a">Înțeleg. Din partea dumneavoastră este nevoie doar de intenția de a vedea o variantă nouă. Noi ne ocupăm de tot și primiți demo-ul când aveți timp să îl analizați.</div>
+  </div>
+  <div class="objection">
+    <div class="objection-q">Nu avem buget</div>
+    <div class="objection-a">Nu este o problemă acum. Demo-ul este gratuit și îl păstrăm activ până la 30 de zile.</div>
+  </div>
+  <div class="objection">
+    <div class="objection-q">Cine sunteți?</div>
+    <div class="objection-a">Suntem WebsiteON și lucrăm exclusiv cu business-uri locale pe website-uri de prezentare moderne premium.</div>
+  </div>
+  <div class="objection">
+    <div class="objection-q">Întrebare tehnică</div>
+    <div class="objection-a">Este o întrebare foarte bună. Notez acum și transmit colegilor din departamentul tehnic — ei vă vor răspunde în cel mai scurt timp posibil.</div>
+  </div>
+</div>
+`;
+}
+
+/* ─────────────────────────────────────────
+   RENDER
+───────────────────────────────────────── */
+function render() {
+  const firm = FIRMS[current];
+  const total = FIRMS.length;
+
+  // Progress
+  document.getElementById('progressFill').style.width = ((current + 1) / total * 100) + '%';
+  document.getElementById('progressLabel').textContent = `${current + 1} / ${total}`;
+
+  // Firm card
+  document.getElementById('firmIndex').textContent = `Firmă #${current + 1}`;
+  document.getElementById('firmType').textContent = firm.type || '';
+  document.getElementById('firmName').textContent = firm.name;
+
+  // Meta
+  const meta = document.getElementById('firmMeta');
+  let metaHtml = `<div class="tag rating">⭐ ${firm.rating} · ${firm.reviews} recenzii</div>`;
+  if (firm.phone) metaHtml += `<a href="tel:${esc(firm.phone)}" class="tag phone">📞 ${esc(firm.phone)}</a>`;
+  if (firm.website) metaHtml += `<a href="${esc(firm.website)}" target="_blank" rel="noopener" class="tag website">🌐 Website</a>`;
+  if (firm.mapsUrl) metaHtml += `<a href="${esc(firm.mapsUrl)}" target="_blank" rel="noopener" class="tag maps">📍 Maps</a>`;
+  meta.innerHTML = metaHtml;
+
+  // Obs
+  document.getElementById('firmObs').textContent = firm.obs;
+
+  // Script
+  document.getElementById('scriptContent').innerHTML = buildScript(firm);
+
+  // Status buttons
+  renderStatusBtns();
+
+  // Notes
+  document.getElementById('notesArea').value = results[current].notes || '';
+
+  // Prev button
+  const prevBtn = document.getElementById('prevBtn');
+  prevBtn.style.opacity = current === 0 ? '0.35' : '1';
+  prevBtn.disabled = current === 0;
+
+  // Next button
+  const nextBtn = document.getElementById('nextBtn');
+  nextBtn.textContent = current === total - 1 ? '✓ Finalizat' : 'Următor →';
+}
+
+/* ─────────────────────────────────────────
+   EXPORT CSV
+───────────────────────────────────────── */
+function exportCSV() {
+  const headers = ['Nr','Firma','Telefon','Rating','Recenzii','Adresa','Website','Status','Notite'];
+  const rows = FIRMS.map((f, i) => [
+    i + 1,
+    `"${(f.name || '').replace(/"/g, '""')}"`,
+    f.phone || '',
+    f.rating || '',
+    f.reviews || '',
+    `"${(f.address || '').replace(/"/g, '""')}"`,
+    f.website || '',
+    results[i].status || 'nesunat',
+    `"${(results[i].notes || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`
+  ]);
+
+  const csv = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `websiteon-apeluri-${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+/* ─────────────────────────────────────────
+   INIT
+───────────────────────────────────────── */
+render();
+</script>
+</body>
+</html>
